@@ -1,0 +1,33 @@
+# Maven / Build target directory
+target/
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.nar
+
+# Logs & Database
+*.log
+*.sqlite
+*.db
+
+# Environment & Config
+.env
+.env.local
+
+# IDE & Editor settings (IntelliJ, Eclipse, VS Code)
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
