@@ -54,8 +54,11 @@ public class AuthService {
             }
             if (student.getPassword() == null || student.getPassword().isBlank()) {
                 student.setPassword(dto.getPassword());
-                student = studentRepository.save(student);
             }
+            if (dto.getExamTarget() != null && !dto.getExamTarget().isBlank()) {
+                student.setTargetCourse(dto.getExamTarget());
+            }
+            student = studentRepository.save(student);
             return student;
         } else {
             // Register Mode
