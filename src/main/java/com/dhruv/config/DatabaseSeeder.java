@@ -43,6 +43,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         Optional<ParentEntity> existingParent = parentRepository.findByPhoneNumber("+919876543211");
         if (existingParent.isEmpty()) {
             ParentEntity parent = new ParentEntity("parent_rajesh", "Rajesh Sharma", "+919876543211");
+            parent.setPassword("DhruvParent#2027");
             parentRepository.save(parent);
         }
 
@@ -50,6 +51,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         Optional<StudentEntity> existingAarav = studentRepository.findByPhoneNumber("+919876543210");
         if (existingAarav.isEmpty()) {
             StudentEntity aarav = new StudentEntity("aarav_2027", "+919876543210", "+919876543211", "Aarav Sharma", "NEET 2027 Repeater");
+            aarav.setPassword("Dhruv#2027");
             aarav.setLevel(12);
             aarav.setXp(3450);
             aarav.setStreakCount(47);
@@ -90,6 +92,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         Optional<StudentEntity> existingAnanya = studentRepository.findByPhoneNumber("+919876543222");
         if (existingAnanya.isEmpty()) {
             StudentEntity ananya = new StudentEntity("ananya_2027", "+919876543222", "+919876543211", "Ananya Sharma", "JEE Advanced 2027");
+            ananya.setPassword("Dhruv#2027");
             ananya.setLevel(14);
             ananya.setXp(4200);
             ananya.setStreakCount(52);
