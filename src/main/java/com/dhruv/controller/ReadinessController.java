@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -15,9 +16,9 @@ public class ReadinessController {
 
     private final ReadinessLedgerService readinessLedgerService;
     private final CoStudyWebSocketHandler coStudyWebSocketHandler;
-    private final com.dhruv.service.PlanCompilerService planCompilerService;
+    private final PlanCompilerService planCompilerService;
 
-    public ReadinessController(ReadinessLedgerService readinessLedgerService, CoStudyWebSocketHandler coStudyWebSocketHandler, com.dhruv.service.PlanCompilerService planCompilerService) {
+    public ReadinessController(ReadinessLedgerService readinessLedgerService, CoStudyWebSocketHandler coStudyWebSocketHandler, PlanCompilerService planCompilerService) {
         this.readinessLedgerService = readinessLedgerService;
         this.coStudyWebSocketHandler = coStudyWebSocketHandler;
         this.planCompilerService = planCompilerService;
@@ -41,6 +42,27 @@ public class ReadinessController {
     @GetMapping("/readiness/parent-report")
     public ResponseEntity<ParentReportDto> getParentReport() {
         return ResponseEntity.ok(readinessLedgerService.getParentReport());
+    }
+
+    @GetMapping("/parent/students")
+    public ResponseEntity<List<ParentReportDto>> getParentStudents(@RequestParam(value = "parentPhone", required = false, defaultValue = "+919876543211") String parentPhone) {
+        return ResponseEntity.ok(readinessLedgerService.getReportsForParent(parentPhone));
+    }
+
+    @PostMapping("/parent/link-student")
+    public ResponseEntity<Map<String, Object>> linkStudentToParent(@RequestBody LinkStudentRequestDto req) {
+        boolean success = readinessLedgerService.linkStudentToParent(req.getParentPhoneNumber(), req.getStudentIdentifier());
+        if (success) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "Student successfully linked to parent portal"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Student not found with User ID or Phone Number: " + req.getStudentIdentifier()));
+        }
+    }
+
+    @PostMapping("/student/send-report")
+    public ResponseEntity<ParentReportDto> sendStudentReport(@RequestParam(value = "studentPhoneOrId", required = false, defaultValue = "+919876543210") String studentPhoneOrId) {
+        ParentReportDto report = readinessLedgerService.sendStudentReport(studentPhoneOrId);
+        return ResponseEntity.ok(report);
     }
 
     @GetMapping("/costudy/room-state")

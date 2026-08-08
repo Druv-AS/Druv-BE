@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface StudentRepository extends JpaRepository<StudentEntity, UUID> {
     Optional<StudentEntity> findByPhoneNumber(String phoneNumber);
+    Optional<StudentEntity> findByUserId(String userId);
+    java.util.List<StudentEntity> findByParentPhoneNumber(String parentPhoneNumber);
 }
