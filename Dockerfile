@@ -1,23 +1,31 @@
-# Stage 1: Build the Java 21 Spring Boot JAR using Maven
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# Stage 1: Build Java 21 Spring Boot Application using Maven
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-# Copy pom.xml and source code
+# Cache dependencies
 COPY pom.xml .
-COPY src ./src
+RUN mvn dependency:go-offline -B
 
-# Package the application skipping tests
+# Copy source code and package application
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Lightweight Java Runtime Environment
+# Stage 2: Lightweight JRE 21 Runtime Environment
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy built JAR from stage 1
-COPY --from=build /app/target/dhruv-backend-0.0.1-SNAPSHOT.jar app.jar
+# Create non-root user for security
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
 
-# Expose server port 8080
+# Copy built JAR artifact from build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose Spring Boot default port 8080
 EXPOSE 8080
+
+# Environment variables
+ENV PORT=8080
 
 # Run Spring Boot Application
 ENTRYPOINT ["java", "-jar", "app.jar"]
