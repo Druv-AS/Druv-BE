@@ -62,30 +62,20 @@ public class AuthService {
             return student;
         } else {
             // Register Mode
-            StudentEntity student;
             if (existing.isPresent()) {
-                student = existing.get();
-                if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                    student.setPassword(dto.getPassword());
-                }
-                if (dto.getName() != null && !dto.getName().isBlank()) student.setName(dto.getName());
-                if (dto.getUserId() != null && !dto.getUserId().isBlank()) student.setUserId(dto.getUserId());
-                if (dto.getParentPhoneNumber() != null && !dto.getParentPhoneNumber().isBlank()) student.setParentPhoneNumber(dto.getParentPhoneNumber());
-                if (dto.getExamTarget() != null && !dto.getExamTarget().isBlank()) student.setTargetCourse(dto.getExamTarget());
-                student = studentRepository.save(student);
-            } else {
-                student = new StudentEntity(
-                        dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : dto.getName().toLowerCase().replaceAll("\\s+", "_"),
-                        dto.getPhoneNumber(),
-                        dto.getParentPhoneNumber(),
-                        dto.getName(),
-                        dto.getExamTarget() != null ? dto.getExamTarget() : "NEET 2027 Repeater"
-                );
-                if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                    student.setPassword(dto.getPassword());
-                }
-                student = studentRepository.save(student);
+                throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: An account already exists with this Mobile Number or User ID. Please switch to Login.");
             }
+            StudentEntity student = new StudentEntity(
+                    dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : dto.getName().toLowerCase().replaceAll("\\s+", "_"),
+                    dto.getPhoneNumber(),
+                    dto.getParentPhoneNumber(),
+                    dto.getName(),
+                    dto.getExamTarget() != null ? dto.getExamTarget() : "NEET 2027 Repeater"
+            );
+            if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+                student.setPassword(dto.getPassword());
+            }
+            student = studentRepository.save(student);
 
             // Ensure student has a parent report record created
             List<ParentReportEntity> reports = parentReportRepository.findByStudentIdOrderByCreatedAtDesc(student.getId());
@@ -140,24 +130,17 @@ public class AuthService {
         } else {
             // Register Mode
             if (existing.isPresent()) {
-                ParentEntity parent = existing.get();
-                if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                    parent.setPassword(dto.getPassword());
-                }
-                if (dto.getName() != null && !dto.getName().isBlank()) parent.setName(dto.getName());
-                if (dto.getUserId() != null && !dto.getUserId().isBlank()) parent.setUserId(dto.getUserId());
-                return parentRepository.save(parent);
-            } else {
-                ParentEntity parent = new ParentEntity(
-                        dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : "parent_" + dto.getName().toLowerCase().replaceAll("\\s+", "_"),
-                        dto.getName(),
-                        dto.getPhoneNumber()
-                );
-                if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                    parent.setPassword(dto.getPassword());
-                }
-                return parentRepository.save(parent);
+                throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: An account already exists with this Mobile Number or User ID. Please switch to Login.");
             }
+            ParentEntity parent = new ParentEntity(
+                    dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : "parent_" + dto.getName().toLowerCase().replaceAll("\\s+", "_"),
+                    dto.getName(),
+                    dto.getPhoneNumber()
+            );
+            if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+                parent.setPassword(dto.getPassword());
+            }
+            return parentRepository.save(parent);
         }
     }
 }
