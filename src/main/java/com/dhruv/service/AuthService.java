@@ -30,10 +30,21 @@ public class AuthService {
 
     @Transactional
     public StudentEntity authenticateStudent(StudentAuthDto dto) {
-        String searchKey = dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "";
-        Optional<StudentEntity> existing = studentRepository.findByPhoneNumber(searchKey);
-        if (existing.isEmpty()) {
-            existing = studentRepository.findByUserId(searchKey);
+        String rawPhone = dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "";
+        String cleanPhone = rawPhone.replaceAll("[^0-9]", "");
+        if (cleanPhone.startsWith("91") && cleanPhone.length() == 12) {
+            cleanPhone = cleanPhone.substring(2);
+        }
+
+        Optional<StudentEntity> existing = studentRepository.findByPhoneNumber(rawPhone);
+        if (existing.isEmpty() && !cleanPhone.isEmpty()) {
+            existing = studentRepository.findByPhoneNumber(cleanPhone);
+        }
+        if (existing.isEmpty() && !cleanPhone.isEmpty()) {
+            existing = studentRepository.findByPhoneNumber("+91" + cleanPhone);
+        }
+        if (existing.isEmpty() && !rawPhone.isEmpty()) {
+            existing = studentRepository.findByUserId(rawPhone);
         }
         if (existing.isEmpty() && dto.getUserId() != null && !dto.getUserId().isBlank()) {
             existing = studentRepository.findByUserId(dto.getUserId().trim());
@@ -65,11 +76,32 @@ public class AuthService {
             if (existing.isPresent()) {
                 throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: An account already exists with this Mobile Number or User ID. Please switch to Login.");
             }
+
+            // Generate unique userId
+            String requestedUserId = (dto.getUserId() != null && !dto.getUserId().isBlank()) ? dto.getUserId().trim() : null;
+            String finalUserId;
+            if (requestedUserId != null) {
+                if (studentRepository.findByUserId(requestedUserId).isPresent()) {
+                    throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: User ID '" + requestedUserId + "' is already taken. Please choose a different User ID.");
+                }
+                finalUserId = requestedUserId;
+            } else {
+                String baseUserId = dto.getName() != null && !dto.getName().isBlank() 
+                        ? dto.getName().toLowerCase().replaceAll("\\s+", "_") 
+                        : "student";
+                String suffix = cleanPhone.length() >= 4 ? cleanPhone.substring(cleanPhone.length() - 4) : String.valueOf((int)(Math.random() * 9000 + 1000));
+                finalUserId = baseUserId + "_" + suffix;
+                int counter = 1;
+                while (studentRepository.findByUserId(finalUserId).isPresent()) {
+                    finalUserId = baseUserId + "_" + suffix + "_" + counter++;
+                }
+            }
+
             StudentEntity student = new StudentEntity(
-                    dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : dto.getName().toLowerCase().replaceAll("\\s+", "_"),
-                    dto.getPhoneNumber(),
-                    dto.getParentPhoneNumber(),
-                    dto.getName(),
+                    finalUserId,
+                    dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "",
+                    dto.getParentPhoneNumber() != null ? dto.getParentPhoneNumber().trim() : "",
+                    dto.getName() != null ? dto.getName().trim() : "Student",
                     dto.getExamTarget() != null ? dto.getExamTarget() : "NEET 2027 Repeater"
             );
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
@@ -100,10 +132,21 @@ public class AuthService {
 
     @Transactional
     public ParentEntity authenticateParent(ParentAuthDto dto) {
-        String searchKey = dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "";
-        Optional<ParentEntity> existing = parentRepository.findByPhoneNumber(searchKey);
-        if (existing.isEmpty()) {
-            existing = parentRepository.findByUserId(searchKey);
+        String rawPhone = dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "";
+        String cleanPhone = rawPhone.replaceAll("[^0-9]", "");
+        if (cleanPhone.startsWith("91") && cleanPhone.length() == 12) {
+            cleanPhone = cleanPhone.substring(2);
+        }
+
+        Optional<ParentEntity> existing = parentRepository.findByPhoneNumber(rawPhone);
+        if (existing.isEmpty() && !cleanPhone.isEmpty()) {
+            existing = parentRepository.findByPhoneNumber(cleanPhone);
+        }
+        if (existing.isEmpty() && !cleanPhone.isEmpty()) {
+            existing = parentRepository.findByPhoneNumber("+91" + cleanPhone);
+        }
+        if (existing.isEmpty() && !rawPhone.isEmpty()) {
+            existing = parentRepository.findByUserId(rawPhone);
         }
         if (existing.isEmpty() && dto.getUserId() != null && !dto.getUserId().isBlank()) {
             existing = parentRepository.findByUserId(dto.getUserId().trim());
@@ -132,10 +175,30 @@ public class AuthService {
             if (existing.isPresent()) {
                 throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: An account already exists with this Mobile Number or User ID. Please switch to Login.");
             }
+
+            String requestedUserId = (dto.getUserId() != null && !dto.getUserId().isBlank()) ? dto.getUserId().trim() : null;
+            String finalUserId;
+            if (requestedUserId != null) {
+                if (parentRepository.findByUserId(requestedUserId).isPresent()) {
+                    throw new IllegalArgumentException("ACCOUNT_ALREADY_EXISTS: Parent User ID '" + requestedUserId + "' is already taken. Please choose a different User ID.");
+                }
+                finalUserId = requestedUserId;
+            } else {
+                String baseUserId = dto.getName() != null && !dto.getName().isBlank() 
+                        ? "parent_" + dto.getName().toLowerCase().replaceAll("\\s+", "_") 
+                        : "parent";
+                String suffix = cleanPhone.length() >= 4 ? cleanPhone.substring(cleanPhone.length() - 4) : String.valueOf((int)(Math.random() * 9000 + 1000));
+                finalUserId = baseUserId + "_" + suffix;
+                int counter = 1;
+                while (parentRepository.findByUserId(finalUserId).isPresent()) {
+                    finalUserId = baseUserId + "_" + suffix + "_" + counter++;
+                }
+            }
+
             ParentEntity parent = new ParentEntity(
-                    dto.getUserId() != null && !dto.getUserId().isBlank() ? dto.getUserId() : "parent_" + dto.getName().toLowerCase().replaceAll("\\s+", "_"),
-                    dto.getName(),
-                    dto.getPhoneNumber()
+                    finalUserId,
+                    dto.getName() != null ? dto.getName().trim() : "Parent",
+                    dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : ""
             );
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 parent.setPassword(dto.getPassword());

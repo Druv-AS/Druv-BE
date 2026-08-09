@@ -25,6 +25,8 @@ public class AuthController {
             return ResponseEntity.ok(student);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "REGISTRATION_ERROR: " + (e.getMessage() != null ? e.getMessage() : "Unable to process account registration.")));
         }
     }
 
@@ -35,6 +37,8 @@ public class AuthController {
             return ResponseEntity.ok(parent);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "REGISTRATION_ERROR: " + (e.getMessage() != null ? e.getMessage() : "Unable to process parent account registration.")));
         }
     }
 
