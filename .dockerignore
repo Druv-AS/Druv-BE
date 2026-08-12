@@ -5,4 +5,9 @@ target/
 .vscode/
 *.iml
 Dockerfile
+.dockerignore
 README.md
+# Never let a real environment file reach the image layer cache.
+.env
+.env.*
+!.env.example
