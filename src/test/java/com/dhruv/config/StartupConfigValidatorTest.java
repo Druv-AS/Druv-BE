@@ -112,6 +112,42 @@ class StartupConfigValidatorTest {
                         .contains("secure"));
     }
 
+    // ------------------------------------------------- SameSite / cross-site warning
+
+    @Test
+    @DisplayName("a cross-site frontend with SameSite=Lax warns but still starts")
+    void warnsWhenSameSiteWouldDropTheCookie() {
+        // The real Vercel + Railway deployment: unrelated registrable domains.
+        Config config = safe();
+        config.cookieSameSite = "Lax";
+        config.publicOrigin = "https://druv-be-production-88a4.up.railway.app";
+        config.corsOrigins = "https://druv-fe-git-main-druva.vercel.app";
+
+        // A warning, not a failure: the check is a heuristic, so it must not block a deploy.
+        assertThatCode(() -> validator(config).validate()).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("subdomains of one domain are same-site, so Lax is correct there")
+    void acceptsLaxForSameSiteSubdomains() {
+        Config config = safe();
+        config.cookieSameSite = "Lax";
+        config.publicOrigin = "https://api.dhruv.example.com";
+        config.corsOrigins = "https://app.dhruv.example.com";
+
+        assertThatCode(() -> validator(config).validate()).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("the SameSite check is skipped when the public origin is unknown")
+    void skipsSameSiteCheckWithoutPublicOrigin() {
+        Config config = safe();
+        config.cookieSameSite = "Lax";
+        config.publicOrigin = "";
+
+        assertThatCode(() -> validator(config).validate()).doesNotThrowAnyException();
+    }
+
     // ---------------------------------------------------------------------- helpers
 
     /** Mutable holder so each test can spoil exactly one field of a valid configuration. */
@@ -121,6 +157,8 @@ class StartupConfigValidatorTest {
         String corsOrigins;
         String websocketOrigins;
         boolean cookieSecure;
+        String cookieSameSite;
+        String publicOrigin;
     }
 
     private static Config safe() {
@@ -130,6 +168,8 @@ class StartupConfigValidatorTest {
         config.corsOrigins = "https://app.dhruv.example.com";
         config.websocketOrigins = "https://app.dhruv.example.com";
         config.cookieSecure = true;
+        config.cookieSameSite = "None";
+        config.publicOrigin = "https://api.dhruv.example.com";
         return config;
     }
 
@@ -140,6 +180,8 @@ class StartupConfigValidatorTest {
         ReflectionTestUtils.setField(validator, "corsOrigins", config.corsOrigins);
         ReflectionTestUtils.setField(validator, "websocketOrigins", config.websocketOrigins);
         ReflectionTestUtils.setField(validator, "cookieSecure", config.cookieSecure);
+        ReflectionTestUtils.setField(validator, "cookieSameSite", config.cookieSameSite);
+        ReflectionTestUtils.setField(validator, "publicOrigin", config.publicOrigin);
         return validator;
     }
 }

@@ -76,6 +76,9 @@ security:
 app:
   websocket:
     allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS:http://localhost:5173}
+  # This API's own public origin. Optional; used only to warn at startup when the
+  # SameSite policy would stop the browser sending the session cookie.
+  public-origin: ${APP_PUBLIC_ORIGIN:}
 
 logging:
   level:
