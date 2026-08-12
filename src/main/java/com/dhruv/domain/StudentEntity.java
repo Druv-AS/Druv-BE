@@ -1,6 +1,7 @@
 package com.dhruv.domain;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public class StudentEntity {
     @Column(name = "freeze_buffer_count")
     private Integer freezeBufferCount = 1;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 

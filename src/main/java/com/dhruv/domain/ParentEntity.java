@@ -1,6 +1,7 @@
 package com.dhruv.domain;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class ParentEntity {
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
